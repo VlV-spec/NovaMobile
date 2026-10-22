@@ -49,6 +49,9 @@ jobs:
       - name: Fix layout and duplicate buttons in Nova 0.8.1
         run: python3 scripts/upgrade_081.py
 
+      - name: Polish Dock dialog and search in Nova 0.8.2
+        run: python3 -c 'import gzip; exec(gzip.open("scripts/upgrade_082.py.gz", "rt", encoding="utf-8").read())'
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
