@@ -26,6 +26,9 @@ jobs:
       - name: Fix Dock pinning and persistence in Nova 0.6.1
         run: python3 scripts/upgrade_061.py
 
+      - name: Add explicit Dock slot picker in Nova 0.6.2
+        run: python3 scripts/upgrade_062.py
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
