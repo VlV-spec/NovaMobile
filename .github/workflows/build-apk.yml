@@ -23,6 +23,9 @@ jobs:
       - name: Apply Nova Mobile 0.6 gestures
         run: python3 scripts/upgrade_06.py
 
+      - name: Fix Dock pinning and persistence in Nova 0.6.1
+        run: python3 scripts/upgrade_061.py
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
