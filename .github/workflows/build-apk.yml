@@ -1,4 +1,4 @@
-name: Build Nova Mobile 1.0 Glass preview
+name: Build Nova Mobile 1.1 Glass preview
 
 on:
   push:
@@ -24,6 +24,14 @@ jobs:
           test ! -e app/nova.keystore
           grep -q 'com.novahome.mobile.glass10preview' app/build.gradle.kts
 
+      - name: Apply sanitized Nova 1.1 Glass redesign
+        run: |
+          cat scripts/nova11_b64_*.txt | base64 -d > /tmp/nova11.diff.xz
+          echo "710b5f2a43c24963f68989d0f2c6513fa294cb2b4b023d907709a8ad8d552d88  /tmp/nova11.diff.xz" | sha256sum -c -
+          xz -dc /tmp/nova11.diff.xz | patch --batch -p1
+          test ! -e app/nova.keystore
+          grep -q 'com.novahome.mobile.glass11preview' app/build.gradle.kts
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -35,6 +43,6 @@ jobs:
         run: gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: NovaMobile-1.0-Glass-debug-apk
+          name: NovaMobile-1.1-Glass-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
