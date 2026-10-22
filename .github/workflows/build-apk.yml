@@ -17,6 +17,9 @@ jobs:
       - name: Extract project
         run: unzip -o NovaMobile_0.1_GitHub.zip
 
+      - name: Apply Nova Mobile 0.5 customizations
+        run: python3 scripts/upgrade_05.py
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
