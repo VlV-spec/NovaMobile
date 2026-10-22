@@ -20,6 +20,9 @@ jobs:
       - name: Apply Nova Mobile 0.5 customizations
         run: python3 scripts/upgrade_05.py
 
+      - name: Apply Nova Mobile 0.6 gestures
+        run: python3 scripts/upgrade_06.py
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
