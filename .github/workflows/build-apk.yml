@@ -1,4 +1,4 @@
-name: Build Nova Mobile APK
+name: Build Nova Mobile 0.9 Glass preview
 
 on:
   push:
@@ -6,73 +6,27 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  glass-preview:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Extract project
-        run: unzip -o NovaMobile_0.1_GitHub.zip
-
-      - name: Apply Nova Mobile 0.5 customizations
-        run: python3 scripts/upgrade_05.py
-
-      - name: Apply Nova Mobile 0.6 gestures
-        run: python3 scripts/upgrade_06.py
-
-      - name: Fix Dock pinning and persistence in Nova 0.6.1
-        run: python3 scripts/upgrade_061.py
-
-      - name: Add explicit Dock slot picker in Nova 0.6.2
-        run: python3 scripts/upgrade_062.py
-
-      - name: Rebuild Dock model and run regression tests in Nova 0.6.3
-        run: python3 -c 'import gzip; exec(gzip.open("scripts/upgrade_063.py.gz", "rt", encoding="utf-8").read())'
-
-      - name: Add lightweight native widgets in Nova 0.7
-        run: python3 -c 'import gzip; exec(gzip.open("scripts/upgrade_070.py.gz", "rt", encoding="utf-8").read())'
-
-      - name: Open alarms and calendar by tapping widgets in Nova 0.7.1
-        run: python3 -c 'import gzip; exec(gzip.open("scripts/upgrade_071.py.gz", "rt", encoding="utf-8").read())'
-
-      - name: Remove duplicate battery and clock date in Nova 0.7.2
-        run: python3 scripts/upgrade_072.py
-
-      - name: Apply Nova 0.8 Ultra Visual design
+      - name: Extract sanitized Claude Glass project
         run: |
-          gzip -dc scripts/ultra080.patch.gz | awk 'index($0,"@@ -893,9 +925,9 @@")==1{skip=1;next} /^@@ /{skip=0} !skip{print}' | patch --batch -p0
-          python3 -c 'from pathlib import Path; p=Path("app/src/main/java/com/novahome/mobile/MainActivity.kt"); s=p.read_text(); s=s.replace("Nova Mobile 0.7.2 · Clean Widgets Preview","Nova Mobile 0.8 · Ultra Visual Preview"); p.write_text(s)'
-
-      - name: Fix layout and duplicate buttons in Nova 0.8.1
-        run: python3 scripts/upgrade_081.py
-
-      - name: Polish Dock dialog and search in Nova 0.8.2
-        run: python3 -c 'import gzip; exec(gzip.open("scripts/upgrade_082.py.gz", "rt", encoding="utf-8").read())'
-
-      - name: Add Nova 0.8.3 weather and VPN cards
-        run: |
-          tar -xzf scripts/status083.tgz
-          python3 upgrade_083.py
-          cp UltraStatusWidgets.kt app/src/main/java/com/novahome/mobile/UltraStatusWidgets.kt
-
+          rm -rf app
+          tar -xJf scripts/nova09_glass_source.tar.xz
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-
-      - name: Build APK
+      - name: Compile and test Glass preview
         run: gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: NovaMobile-debug-apk
+          name: NovaMobile-0.9-Glass-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
