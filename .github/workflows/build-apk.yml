@@ -41,6 +41,9 @@ jobs:
       - name: Remove duplicate battery and clock date in Nova 0.7.2
         run: python3 scripts/upgrade_072.py
 
+      - name: Apply Nova 0.8 Ultra Visual design
+        run: gzip -dc scripts/ultra080.patch.gz | patch --batch -p0
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
