@@ -42,7 +42,9 @@ jobs:
         run: python3 scripts/upgrade_072.py
 
       - name: Apply Nova 0.8 Ultra Visual design
-        run: gzip -dc scripts/ultra080.patch.gz | patch --batch -p0
+        run: |
+          gzip -dc scripts/ultra080.patch.gz | awk '/^@@ -893,9 \\+925,9 @@/{skip=1;next} /^@@ /{skip=0} !skip{print}' | patch --batch -p0
+          python3 -c 'from pathlib import Path; p=Path("app/src/main/java/com/novahome/mobile/MainActivity.kt"); s=p.read_text(); s=s.replace("Nova Mobile 0.7.2 · Clean Widgets Preview","Nova Mobile 0.8 · Ultra Visual Preview"); p.write_text(s)'
 
       - uses: actions/setup-java@v4
         with:
