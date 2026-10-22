@@ -32,6 +32,9 @@ jobs:
       - name: Rebuild Dock model and run regression tests in Nova 0.6.3
         run: python3 -c 'import gzip; exec(gzip.open("scripts/upgrade_063.py.gz", "rt", encoding="utf-8").read())'
 
+      - name: Add lightweight native widgets in Nova 0.7
+        run: python3 -c 'import gzip; exec(gzip.open("scripts/upgrade_070.py.gz", "rt", encoding="utf-8").read())'
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
