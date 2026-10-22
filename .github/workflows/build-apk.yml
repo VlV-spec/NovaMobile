@@ -52,6 +52,12 @@ jobs:
       - name: Polish Dock dialog and search in Nova 0.8.2
         run: python3 -c 'import gzip; exec(gzip.open("scripts/upgrade_082.py.gz", "rt", encoding="utf-8").read())'
 
+      - name: Add Nova 0.8.3 weather and VPN cards
+        run: |
+          tar -xzf scripts/status083.tgz
+          python3 upgrade_083.py
+          cp UltraStatusWidgets.kt app/src/main/java/com/novahome/mobile/UltraStatusWidgets.kt
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
