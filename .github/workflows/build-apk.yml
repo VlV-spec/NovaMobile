@@ -35,6 +35,9 @@ jobs:
       - name: Add lightweight native widgets in Nova 0.7
         run: python3 -c 'import gzip; exec(gzip.open("scripts/upgrade_070.py.gz", "rt", encoding="utf-8").read())'
 
+      - name: Open alarms and calendar by tapping widgets in Nova 0.7.1
+        run: python3 -c 'import gzip; exec(gzip.open("scripts/upgrade_071.py.gz", "rt", encoding="utf-8").read())'
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
