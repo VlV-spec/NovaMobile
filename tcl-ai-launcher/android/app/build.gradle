@@ -1,0 +1,19 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.tclai.launcher'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'com.tclai.launcher'
+        minSdk 28
+        targetSdk 32
+        versionCode 4
+        versionName '0.4.0'
+    }
+    buildTypes {
+        release { minifyEnabled false }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}

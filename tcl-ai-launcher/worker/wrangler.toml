@@ -1,0 +1,4 @@
+name = "tv-ai-assistant-v01"
+main = "src/index.js"
+compatibility_date = "2025-04-01"
+workers_dev = true
