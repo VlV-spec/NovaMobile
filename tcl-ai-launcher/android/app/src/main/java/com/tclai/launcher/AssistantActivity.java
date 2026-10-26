@@ -1,7 +1,7 @@
 package com.tclai.launcher;
 
 import android.app.Activity;
-import android.app.ActivityNotFoundException;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
