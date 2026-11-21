@@ -21,6 +21,11 @@ test -d unpack/assets/dist
 mkdir -p source/third_party/lok/jniLibs
 cp -a unpack/lib/arm64-v8a source/third_party/lok/jniLibs/
 cp -a unpack/assets source/third_party/lok/
+# The PDF bridge is rebuilt from GPL sources; do not bundle duplicate prebuilt binaries.
+rm -f source/third_party/lok/jniLibs/arm64-v8a/liboopdf.so
+rm -f source/third_party/lok/jniLibs/arm64-v8a/libpdfium.so
+printf "LOK native libraries:\\n"
+find source/third_party/lok/jniLibs/arm64-v8a -maxdepth 1 -type f -printf "%f\\n" | sort
 echo "Native LibreOfficeKit/Collabora payload copied from authenticated upstream release."
 du -sh source/third_party/lok/*
 (cd source && bash scripts/fetch-pdfium.sh)
