@@ -32,7 +32,9 @@ jobs:
           APK="$(find source/app/build/outputs/apk/debug -name '*arm64-v8a*.apk' | head -1)"
           [ -n "$APK" ] || APK="$(find source/app/build/outputs/apk/debug -name '*.apk' | head -1)"
           echo "APK=$APK"
-          unzip -l "$APK" | grep -E 'liblo-native-code.so|libreoffice|assets/dist' | head -20
+          unzip -l "$APK" > apk-entry-list.txt
+          grep -q 'lib/arm64-v8a/liblo-native-code.so' apk-entry-list.txt
+          grep -E 'liblo-native-code.so|libreoffice|assets/dist' apk-entry-list.txt | head -20 || true
           du -h "$APK"
           cp "$APK" NovaWriter-Collabora-arm64-debug.apk
       - uses: actions/upload-artifact@v4
