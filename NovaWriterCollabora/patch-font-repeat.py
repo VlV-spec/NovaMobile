@@ -32,6 +32,9 @@ s=s[:start]+'''    fun setFontFamily(family: String) {
             "if (!m || !m.isEditMode || !m.isEditMode() || !m.applyFont) return 'no-edit';" +
             "m.applyFont(" + JSONObject.quote(family) + ");" +
             "m.focus();" +
+            // Android's native popup can close AFTER the immediate focus call.
+            // Refocus once more after its dismiss animation so the caret sticks.
+            "setTimeout(function(){ if(m.refocus) m.refocus(); else m.focus(); }, 180);" +
             "return 'font-sent';" +
             "})()"
         executeFormatting(js)
@@ -47,6 +50,9 @@ s=s[:start]+'''    fun setFontSize(points: Int) {
             "if (!m || !m.isEditMode || !m.isEditMode() || !m.applyFontSize) return 'no-edit';" +
             "m.applyFontSize(" + points + ");" +
             "m.focus();" +
+            // Android's native popup can close AFTER the immediate focus call.
+            // Refocus once more after its dismiss animation so the caret sticks.
+            "setTimeout(function(){ if(m.refocus) m.refocus(); else m.focus(); }, 180);" +
             "return 'size-sent';" +
             "})()"
         executeFormatting(js)
