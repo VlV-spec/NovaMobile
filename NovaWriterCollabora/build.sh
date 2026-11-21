@@ -110,8 +110,8 @@ main.write_text(s)
 app=root/'ui/AppRoot.kt'
 s=app.read_text()
 needle='    onOpen: () -> Unit,'
-assert s.count(needle)==1
-s=s.replace(needle, needle+'\n    onNew: () -> Unit,')
+assert s.count(needle)>=1
+s=s.replace(needle, needle+'\n    onNew: () -> Unit,', 1)
 needle='HomeScreen(tabs = tabs, onOpen = onOpen, onSelectTab = ::select, onMessage = onMessage)'
 assert s.count(needle)==1
 s=s.replace(needle,'HomeScreen(tabs = tabs, onOpen = onOpen, onNew = onNew, onSelectTab = ::select, onMessage = onMessage)')
@@ -132,7 +132,7 @@ s=s.replace(needle,'''            Row(Modifier.fillMaxWidth().padding(16.dp), ho
 home.write_text(s)
 
 build=Path('source/app/build.gradle.kts')
-s=build.read_text().replace('versionCode = 20','versionCode = 21').replace('versionName = "0.2.0-engine"','versionName = "0.2.1-engine"')
+s=build.read_text().replace('versionCode = 20','versionCode = 22').replace('versionName = "0.2.0-engine"','versionName = "0.3.0-ui"')
 build.write_text(s)
 PY
 
@@ -198,8 +198,91 @@ internal object BlankDocx {
 }
 KOTLIN
 
+
+# Replace old home screen with a native Compose home using working actions.
+cp NovaWriterCollabora/ui/HomeScreen.kt source/app/src/main/java/dev/offlineoffice/app/ui/HomeScreen.kt
+
+# Style native app chrome to match Word Mobile's blue-and-white visual hierarchy.
+python3 - <<'PY'
+from pathlib import Path
+import re
+p=Path("source/app/src/main/java/dev/offlineoffice/app/ui/AppRoot.kt")
+s=p.read_text()
+s=s.replace('import androidx.compose.material3.TopAppBar\n',
+            'import androidx.compose.material3.TopAppBar\nimport androidx.compose.material3.TopAppBarDefaults\n')
+s=s.replace('import androidx.compose.ui.Alignment\n',
+            'import androidx.compose.ui.Alignment\nimport androidx.compose.ui.graphics.Color\n')
+needle='                TopAppBar(\n'
+assert needle in s
+s=s.replace(needle,'''                TopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color(0xFF185ABD),
+                        titleContentColor = Color.White,
+                        navigationIconContentColor = Color.White,
+                        actionIconContentColor = Color.White,
+                    ),
+''',1)
+s=s.replace('TabCountChip(count = tabList.size, onClick = { showSwitcher = true })',
+            'if (tabList.isNotEmpty()) TabCountChip(count = tabList.size, onClick = { showSwitcher = true })')
+old='''@Composable
+private fun HomeTitle() {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Image(painterResource(R.drawable.libreon_logo), null, Modifier.size(36.dp))
+        Column(Modifier.padding(start = 10.dp)) {
+            Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleLarge)
+            Text(
+                stringResource(R.string.app_tagline),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+    }
+}
+'''
+new='''@Composable
+private fun HomeTitle() {
+    Column(Modifier.padding(start = 8.dp)) {
+        Text("Nova Writer", style = MaterialTheme.typography.titleLarge, color = Color.White)
+        Text("Документы", style = MaterialTheme.typography.labelSmall, color = Color(0xFFDDE8FF))
+    }
+}
+'''
+assert old in s,"HomeTitle original not found"
+s=s.replace(old,new)
+# Add an actionable New document menu command, available even when a document is open.
+s=s.replace('''                            onOpen = onOpen,
+                            onSaveAs''','''                            onOpen = onOpen,
+                            onNew = onNew,
+                            onSaveAs''')
+s=s.replace('''private fun OverflowMenu(
+    hasActive: Boolean,
+    onOpen: () -> Unit,''','''private fun OverflowMenu(
+    hasActive: Boolean,
+    onOpen: () -> Unit,
+    onNew: () -> Unit,''')
+assert '    onNew: () -> Unit,' in s
+menu='''        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text("Новый документ") },
+                leadingIcon = { Icon(Icons.Outlined.FolderOpen, null) },
+                onClick = { expanded = false; onNew() },
+            }
+'''
+needle='''        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+'''
+assert needle in s
+s=s.replace(needle,menu,1)
+s=s.replace('text = { Text("Open…") }','text = { Text("Открыть файл…") }')
+s=s.replace('text = { Text("Save as…") }','text = { Text("Сохранить как…") }')
+s=s.replace('text = { Text("Share") }','text = { Text("Поделиться") }')
+s=s.replace('text = { Text("Export as PDF…") }','text = { Text("Экспортировать в PDF…") }')
+s=s.replace('text = { Text("Full screen") }','text = { Text("На весь экран") }')
+s=s.replace('text = { Text("Word count") }','text = { Text("Статистика текста") }')
+p.write_text(s)
+PY
+
 cat > source/NOVA_WRITER_CHANGES.md <<'EOF'
-Nova Writer 0.2.1-engine
+Nova Writer 0.3.0-ui
 Upstream: Libreon v0.9.5-beta.5 (https://github.com/jainiakhil/Libreon), GPL-3.0-or-later.
 Office engine: LibreOfficeKit + Collabora Online, MPL-2.0 and other respective licenses.
 Changes: product name, Android applicationId, primary UI colour, selected Russian UI labels,
