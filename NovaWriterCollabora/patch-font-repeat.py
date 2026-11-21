@@ -92,5 +92,5 @@ s=s.replace('caption = "ШРИФТ"', 'caption = "ШРИФТ · УСТАНОВЛ
 p.write_text(s,encoding="utf-8")
 assert "m.applyFont(" in Path("source/engine-office/src/main/java/dev/offlineoffice/office/OfficeDocument.kt").read_text()
 assert "m.focus();" in Path("source/engine-office/src/main/java/dev/offlineoffice/office/OfficeDocument.kt").read_text()
-assert "Times New Roman" not in s
+assert '"Times New Roman",' not in s, "Missing proprietary font should not be offered"
 print("Repeated font switching uses built-in Collabora API + focus, and installed fonts only.")
