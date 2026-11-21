@@ -58,6 +58,8 @@ assert s.count(needle)==1
 # Insert outside existing UNO command handler, just before it.
 prefix=r'''
     private val supportedFamilies = setOf(
+        "Aptos", "Calibri", "Arial", "Times New Roman", "Cambria",
+        "Georgia", "Verdana", "Tahoma", "Courier New",
         "Liberation Sans", "Liberation Serif", "Liberation Mono",
         "Carlito", "Caladea", "DejaVu Sans", "DejaVu Serif", "Noto Sans",
     )
@@ -115,6 +117,8 @@ private fun WordRibbon(
     val blue = Color(0xFF185ABD)
     val ink = Color(0xFF203044)
     val familyNames = listOf(
+        "Aptos", "Calibri", "Arial", "Times New Roman", "Cambria",
+        "Georgia", "Verdana", "Tahoma", "Courier New",
         "Liberation Sans", "Liberation Serif", "Liberation Mono",
         "Carlito", "Caladea", "DejaVu Sans", "DejaVu Serif", "Noto Sans",
     )
@@ -122,7 +126,7 @@ private fun WordRibbon(
     var tab by rememberSaveable { mutableStateOf("Главная") }
     var familyMenu by remember { mutableStateOf(false) }
     var sizeMenu by remember { mutableStateOf(false) }
-    var chosenFamily by rememberSaveable { mutableStateOf("Liberation Sans") }
+    var chosenFamily by rememberSaveable { mutableStateOf("Calibri") }
     var chosenSize by rememberSaveable { mutableStateOf(12) }
     val tabs = listOf("Главная", "Вставка", "Макет")
 
