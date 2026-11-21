@@ -132,7 +132,7 @@ s=s.replace(needle,'''            Row(Modifier.fillMaxWidth().padding(16.dp), ho
 home.write_text(s)
 
 build=Path('source/app/build.gradle.kts')
-s=build.read_text().replace('versionCode = 20','versionCode = 23').replace('versionName = "0.2.0-engine"','versionName = "0.4.0-ribbon"')
+s=build.read_text().replace('versionCode = 20','versionCode = 24').replace('versionName = "0.2.0-engine"','versionName = "0.5.0-fonts"')
 build.write_text(s)
 PY
 
@@ -283,13 +283,14 @@ PY
 
 # Add real editor formatting commands and Word-like tabs.
 python3 NovaWriterCollabora/patch-ribbon.py
+python3 NovaWriterCollabora/patch-fonts.py
 
 cat > source/NOVA_WRITER_CHANGES.md <<'EOF'
-Nova Writer 0.4.0-ribbon
+Nova Writer 0.5.0-fonts
 Upstream: Libreon v0.9.5-beta.5 (https://github.com/jainiakhil/Libreon), GPL-3.0-or-later.
 Office engine: LibreOfficeKit + Collabora Online, MPL-2.0 and other respective licenses.
 Changes: product name, Android applicationId, primary UI colour, selected Russian UI labels,
-ARM64 debug packaging, new-document UI and minimal OOXML creator. Original sources/attributions retained. 
+ARM64 debug packaging, new-document UI, minimal OOXML creator, native Word-like ribbon with font family and font size choices. Original sources/attributions retained. 
 This is a technical preview, NOT Microsoft Word and NOT affiliated with Microsoft/Collabora/Libreon.
 Build recipe: see https://github.com/VlV-spec/NovaMobile/tree/sandbox/nova-writer-collabora/NovaWriterCollabora
 EOF
