@@ -57,8 +57,8 @@ replacements={
 'Search on device':'Найти на устройстве',
 'Open tabs':'Открытые документы',
 'Unsaved changes':'Есть несохранённые изменения',
-'Recent':'Недавние',
-'Recently closed':'Недавно закрытые',
+'\"Recent\"':'\"Недавние\"',
+'\"Recently closed\"':'\"Недавно закрытые\"',
 'No ads, no accounts, no internet. Everything stays on this device.':'Без аккаунтов и подписок. Файлы остаются на устройстве.',
 'Word, Excel, PowerPoint, PDF, Apple Pages, Numbers and Keynote, and text files open here. Everything stays on this device.':'Открывай и редактируй документы Word офлайн.',
 }
