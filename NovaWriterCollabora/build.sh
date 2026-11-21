@@ -266,7 +266,7 @@ menu='''        DropdownMenu(expanded = expanded, onDismissRequest = { expanded 
                 text = { Text("Новый документ") },
                 leadingIcon = { Icon(Icons.Outlined.FolderOpen, null) },
                 onClick = { expanded = false; onNew() },
-            }
+            )
 '''
 needle='''        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
 '''
