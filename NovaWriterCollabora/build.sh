@@ -72,12 +72,138 @@ home.write_text(s)
 # The copied app retains source notices, original author credits and GPL compliance info.
 PY
 
+
+# Add genuine new-document flow: SAF create -> write a valid OOXML package -> open in LibreOfficeKit.
+python3 - <<'PY'
+from pathlib import Path
+root=Path('source/app/src/main/java/dev/offlineoffice/app')
+main=root/'MainActivity.kt'
+s=main.read_text()
+needle='    private var pendingSaveAs: String? = null'
+assert s.count(needle)==1, 'Cannot find activity insertion point'
+s=s.replace(needle, '''    private val createBlankWord = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+    ) { uri ->
+        if (uri != null) lifecycleScope.launch {
+            val result = runCatching {
+                withContext(Dispatchers.IO) {
+                    contentResolver.openOutputStream(uri, "wt")?.use { stream ->
+                        BlankDocx.write(stream)
+                    } ?: error("Не удалось создать документ")
+                }
+            }
+            if (result.isSuccess) {
+                open(uri, OpenOrigin.PICKER, "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            } else {
+                Toast.makeText(this@MainActivity, "Ошибка создания DOCX: " + result.exceptionOrNull()?.message, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+''' + needle)
+needle='                    onOpen = { openDocuments.launch(DocumentKind.pickerMimeTypes) },'
+assert s.count(needle)==1
+s=s.replace(needle, needle + '''
+                    onNew = { createBlankWord.launch("Новый документ.docx") },''')
+main.write_text(s)
+
+app=root/'ui/AppRoot.kt'
+s=app.read_text()
+needle='    onOpen: () -> Unit,'
+assert s.count(needle)==1
+s=s.replace(needle, needle+'\n    onNew: () -> Unit,')
+needle='HomeScreen(tabs = tabs, onOpen = onOpen, onSelectTab = ::select, onMessage = onMessage)'
+assert s.count(needle)==1
+s=s.replace(needle,'HomeScreen(tabs = tabs, onOpen = onOpen, onNew = onNew, onSelectTab = ::select, onMessage = onMessage)')
+app.write_text(s)
+
+home=root/'ui/HomeScreen.kt'
+s=home.read_text()
+needle='fun HomeScreen(tabs: TabManager, onOpen: () -> Unit, onSelectTab: (String) -> Unit, onMessage: (String) -> Unit) {'
+assert s.count(needle)==1
+s=s.replace(needle,'fun HomeScreen(tabs: TabManager, onOpen: () -> Unit, onNew: () -> Unit, onSelectTab: (String) -> Unit, onMessage: (String) -> Unit) {')
+needle='''            Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.Center) {
+                Button(onClick = onOpen) {'''
+assert s.count(needle)==1
+s=s.replace(needle,'''            Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.Center) {
+                Button(onClick = onNew) { Text("Новый документ") }
+                Spacer(Modifier.size(8.dp))
+                Button(onClick = onOpen) {''')
+home.write_text(s)
+
+build=Path('source/app/build.gradle.kts')
+s=build.read_text().replace('versionCode = 20','versionCode = 21').replace('versionName = "0.2.0-engine"','versionName = "0.2.1-engine"')
+build.write_text(s)
+PY
+
+cat > source/app/src/main/java/dev/offlineoffice/app/BlankDocx.kt <<'KOTLIN'
+// SPDX-License-Identifier: GPL-3.0-or-later
+package dev.offlineoffice.app
+
+import java.io.OutputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
+
+/** Generates an editable, empty WordprocessingML .docx without networking or templates. */
+internal object BlankDocx {
+    fun write(output: OutputStream) {
+        ZipOutputStream(output).use { zip ->
+            fun part(path: String, xml: String) {
+                zip.putNextEntry(ZipEntry(path))
+                zip.write(xml.trimIndent().toByteArray(Charsets.UTF_8))
+                zip.closeEntry()
+            }
+            part("[Content_Types].xml", """
+                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+                  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+                  <Default Extension="xml" ContentType="application/xml"/>
+                  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+                  <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
+                </Types>
+            """)
+            part("_rels/.rels", """
+                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+                  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+                </Relationships>
+            """)
+            part("word/_rels/document.xml.rels", """
+                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+                  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+                </Relationships>
+            """)
+            part("word/styles.xml", """
+                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                <w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+                  <w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Liberation Sans" w:hAnsi="Liberation Sans"/></w:rPr></w:rPrDefault></w:docDefaults>
+                  <w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style>
+                </w:styles>
+            """)
+            part("word/document.xml", """
+                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+                  <w:body>
+                    <w:p/>
+                    <w:sectPr>
+                      <w:pgSz w:w="11906" w:h="16838"/>
+                      <w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/>
+                    </w:sectPr>
+                  </w:body>
+                </w:document>
+            """)
+        }
+    }
+}
+KOTLIN
+
 cat > source/NOVA_WRITER_CHANGES.md <<'EOF'
-Nova Writer 0.2.0-engine
+Nova Writer 0.2.1-engine
 Upstream: Libreon v0.9.5-beta.5 (https://github.com/jainiakhil/Libreon), GPL-3.0-or-later.
 Office engine: LibreOfficeKit + Collabora Online, MPL-2.0 and other respective licenses.
 Changes: product name, Android applicationId, primary UI colour, selected Russian UI labels,
-ARM64 debug packaging. Original sources/attributions retained. 
+ARM64 debug packaging, new-document UI and minimal OOXML creator. Original sources/attributions retained. 
 This is a technical preview, NOT Microsoft Word and NOT affiliated with Microsoft/Collabora/Libreon.
 Build recipe: see https://github.com/VlV-spec/NovaMobile/tree/sandbox/nova-writer-collabora/NovaWriterCollabora
 EOF
