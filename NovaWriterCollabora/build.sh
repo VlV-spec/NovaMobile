@@ -132,7 +132,7 @@ s=s.replace(needle,'''            Row(Modifier.fillMaxWidth().padding(16.dp), ho
 home.write_text(s)
 
 build=Path('source/app/build.gradle.kts')
-s=build.read_text().replace('versionCode = 20','versionCode = 22').replace('versionName = "0.2.0-engine"','versionName = "0.3.0-ui"')
+s=build.read_text().replace('versionCode = 20','versionCode = 23').replace('versionName = "0.2.0-engine"','versionName = "0.4.0-ribbon"')
 build.write_text(s)
 PY
 
@@ -281,8 +281,11 @@ s=s.replace('text = { Text("Word count") }','text = { Text("Статистика
 p.write_text(s)
 PY
 
+# Add real editor formatting commands and Word-like tabs.
+python3 NovaWriterCollabora/patch-ribbon.py
+
 cat > source/NOVA_WRITER_CHANGES.md <<'EOF'
-Nova Writer 0.3.0-ui
+Nova Writer 0.4.0-ribbon
 Upstream: Libreon v0.9.5-beta.5 (https://github.com/jainiakhil/Libreon), GPL-3.0-or-later.
 Office engine: LibreOfficeKit + Collabora Online, MPL-2.0 and other respective licenses.
 Changes: product name, Android applicationId, primary UI colour, selected Russian UI labels,
