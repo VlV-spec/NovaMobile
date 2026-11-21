@@ -1,0 +1,40 @@
+name: Nova Writer Collabora engine build
+on:
+  push:
+    branches: [ sandbox/nova-writer-collabora ]
+  workflow_dispatch:
+jobs:
+  build-arm64:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Check Android SDK
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls "$ANDROID_HOME/platforms" | tail -10
+          ls "$ANDROID_HOME/build-tools" | tail -10
+          ls "$ANDROID_HOME/ndk" | tail -10 || true
+      - name: Build Nova Writer with actual LibreOfficeKit
+        shell: bash
+        run: bash NovaWriterCollabora/build.sh
+      - name: Verify APK contains engine
+        shell: bash
+        run: |
+          APK="$(find source/app/build/outputs/apk/debug -name '*arm64-v8a*.apk' | head -1)"
+          [ -n "$APK" ] || APK="$(find source/app/build/outputs/apk/debug -name '*.apk' | head -1)"
+          echo "APK=$APK"
+          unzip -l "$APK" | grep -E 'liblo-native-code.so|libreoffice|assets/dist' | head -20
+          du -h "$APK"
+          cp "$APK" NovaWriter-Collabora-arm64-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NovaWriter-Collabora-ARM64-APK
+          path: NovaWriter-Collabora-arm64-debug.apk
+          if-no-files-found: error
