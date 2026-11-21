@@ -3,6 +3,8 @@ on:
   push:
     branches: [ sandbox/nova-writer-collabora ]
   workflow_dispatch:
+  pull_request:
+    branches: [ main ]
 jobs:
   build-arm64:
     runs-on: ubuntu-latest
